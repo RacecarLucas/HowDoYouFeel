@@ -1,9 +1,9 @@
 export const colors = {
-  background: '#FFF8E7',
-  backgroundLight: '#FFFBF0',
+  background: '#FFFDF9',
+  backgroundLight: '#FFFFFF',
   text: '#2D2D2D',
   textSecondary: '#6B6B6B',
-  border: '#E0D5C1',
+  border: '#E8E0D5',
   white: '#FFFFFF',
   black: '#000000',
 };

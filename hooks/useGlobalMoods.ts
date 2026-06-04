@@ -77,9 +77,8 @@ export function useGlobalMoods() {
   }, [setGlobalMoods, addPlusOne]);
 
   const clickMood = useCallback(async (mood: MoodType) => {
-    addPlusOne(mood);
-
     if (!firebaseReady || !db) {
+      addPlusOne(mood);
       const current = useMoodStore.getState().globalMoods;
       setGlobalMoods({
         ...current,

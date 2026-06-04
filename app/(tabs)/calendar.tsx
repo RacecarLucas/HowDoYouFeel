@@ -18,6 +18,9 @@ import { UserMoodEntry, MoodType } from '../../types';
 import { MoodChart } from '../../components/MoodChart';
 
 const { width } = Dimensions.get('window');
+const HORIZONTAL_PADDING = 24;
+const CALENDAR_WIDTH = width - HORIZONTAL_PADDING * 2;
+const CELL_SIZE = CALENDAR_WIDTH / 7;
 
 const moodScores: Record<MoodType, number> = {
   excited: 5,
@@ -139,7 +142,10 @@ export default function CalendarScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.title}>This Month</Text>
 
         <View style={styles.monthHeader}>
@@ -251,8 +257,8 @@ export default function CalendarScreen() {
                 value: d.value,
                 label: d.label,
               }))}
-              width={width - 64}
-              height={180}
+              width={CALENDAR_WIDTH}
+              height={160}
               maxValue={5}
             />
             <View style={styles.legend}>
@@ -294,73 +300,78 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  scrollContent: {
+    paddingTop: 16,
+    paddingBottom: 32,
+    alignItems: 'center',
+  },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontFamily: fontFamily.bold,
     textAlign: 'center',
     color: colors.text,
-    marginTop: 16,
     marginBottom: 16,
   },
   monthHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    width: CALENDAR_WIDTH,
     marginBottom: 16,
   },
   arrow: {
-    fontSize: 24,
+    fontSize: 20,
     color: colors.text,
+    paddingHorizontal: 8,
   },
   monthText: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: fontFamily.semiBold,
     color: colors.text,
   },
   calendar: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 16,
-    marginBottom: 24,
+    width: CALENDAR_WIDTH,
+    marginBottom: 20,
   },
   dayHeader: {
-    width: (width - 32) / 7,
+    width: CELL_SIZE,
     textAlign: 'center',
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: fontFamily.semiBold,
     color: colors.textSecondary,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   dayCell: {
-    width: (width - 32) / 7,
-    height: (width - 32) / 7,
+    width: CELL_SIZE,
+    height: CELL_SIZE,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 2,
   },
   dayNumber: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: fontFamily.regular,
     color: colors.text,
   },
   dayNumberActive: {
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: fontFamily.semiBold,
     color: '#FFFFFF',
   },
   moodDay: {
     width: '90%',
     height: '90%',
-    borderRadius: 12,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
   moodEmoji: {
-    fontSize: 18,
+    fontSize: 16,
   },
   detailCard: {
-    margin: 16,
+    width: CALENDAR_WIDTH,
     padding: 16,
     backgroundColor: colors.white,
     borderRadius: 16,
@@ -369,39 +380,40 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    marginBottom: 20,
   },
   closeDetail: {
     alignSelf: 'flex-end',
     padding: 4,
   },
   detailEmoji: {
-    fontSize: 40,
+    fontSize: 36,
     textAlign: 'center',
     marginBottom: 8,
   },
   detailMood: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: fontFamily.bold,
     textAlign: 'center',
     color: colors.text,
     marginBottom: 8,
   },
   detailNote: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: fontFamily.regular,
     color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 8,
   },
   detailDate: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: fontFamily.regular,
     color: colors.textSecondary,
     textAlign: 'center',
   },
   chartSection: {
-    marginHorizontal: 16,
-    marginBottom: 24,
+    width: CALENDAR_WIDTH,
+    marginBottom: 20,
     padding: 16,
     backgroundColor: colors.white,
     borderRadius: 20,
@@ -443,27 +455,27 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   statsSection: {
-    paddingHorizontal: 16,
+    width: CALENDAR_WIDTH,
     paddingBottom: 32,
   },
   statsTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: fontFamily.bold,
     color: colors.text,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   moodCounts: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
   },
   statItem: {
     alignItems: 'center',
     backgroundColor: colors.white,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 16,
-    minWidth: 70,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    minWidth: 64,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -471,16 +483,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   statEmoji: {
-    fontSize: 24,
+    fontSize: 22,
     marginBottom: 4,
   },
   statCount: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: fontFamily.bold,
     color: colors.text,
   },
   noData: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: fontFamily.medium,
     color: colors.textSecondary,
     fontStyle: 'italic',

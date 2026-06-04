@@ -4,6 +4,7 @@ import {
   Text,
   View,
   SafeAreaView,
+  ScrollView,
   Pressable,
   Dimensions,
   Platform,
@@ -22,7 +23,7 @@ import { fontFamily } from '../../constants/fonts';
 import { MoodType } from '../../types';
 
 const { width } = Dimensions.get('window');
-const GLOBE_SIZE = width * 0.85;
+const GLOBE_SIZE = width * 0.7;
 const DOT_SIZE = 16;
 
 interface DotData {
@@ -155,19 +156,24 @@ export default function GlobeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>How does the Globe feel?</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.title}>How does the Globe feel?</Text>
 
-      <View style={styles.globeContainer}>
-        <View style={[styles.globe, { width: GLOBE_SIZE, height: GLOBE_SIZE }]}>
-          {dots.map((dot) => (
-            <GlobeDot key={dot.id} dot={dot} onPress={setSelectedDot} />
-          ))}
+        <View style={styles.globeContainer}>
+          <View style={[styles.globe, { width: GLOBE_SIZE, height: GLOBE_SIZE }]}>
+            {dots.map((dot) => (
+              <GlobeDot key={dot.id} dot={dot} onPress={setSelectedDot} />
+            ))}
+          </View>
         </View>
-      </View>
 
-      <Text style={styles.subtitle}>
-        {dots.length} people sharing their mood right now
-      </Text>
+        <Text style={styles.subtitle}>
+          {dots.length} people sharing their mood right now
+        </Text>
+      </ScrollView>
 
       {selectedDot && (
         <View style={styles.personCard}>
@@ -199,13 +205,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  scrollContent: {
     alignItems: 'center',
+    paddingTop: 16,
+    paddingBottom: 40,
   },
   title: {
     fontSize: 24,
     fontFamily: fontFamily.bold,
     color: colors.text,
-    marginTop: 16,
     marginBottom: 24,
   },
   globeContainer: {

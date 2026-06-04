@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, Dimensions, Animated } from 'react-native';
 import { MoodType } from '../types';
-import { getMoodById } from '../constants/moods';
 import { useMoodStore } from '../store/useMoodStore';
 
 const { height } = Dimensions.get('window');
@@ -16,7 +15,6 @@ export function FallingPlusOne({ id, mood, x }: FallingPlusOneProps) {
   const translateY = useRef(new Animated.Value(-50)).current;
   const opacity = useRef(new Animated.Value(1)).current;
   const { removePlusOne } = useMoodStore();
-  const moodConfig = getMoodById(mood);
 
   useEffect(() => {
     Animated.parallel([
@@ -46,7 +44,6 @@ export function FallingPlusOne({ id, mood, x }: FallingPlusOneProps) {
         styles.container,
         {
           left: `${x}%`,
-          backgroundColor: moodConfig?.color || '#ccc',
           transform: [{ translateY }],
           opacity,
         },
@@ -61,19 +58,14 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     top: 0,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
     zIndex: 100,
   },
   text: {
-    color: '#FFFFFF',
+    color: '#E9C46A',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 21,
+    textShadowColor: 'rgba(0,0,0,0.15)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 });

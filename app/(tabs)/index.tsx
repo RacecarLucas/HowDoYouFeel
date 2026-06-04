@@ -15,7 +15,6 @@ import { MoodButton } from '../../components/MoodButton';
 import { MoodSelector } from '../../components/MoodSelector';
 import { GlobalCounter } from '../../components/GlobalCounter';
 import { FallingPlusOne } from '../../components/FallingPlusOne';
-import { AIPal } from '../../components/AIPal';
 import { ConnectionBanner } from '../../components/ConnectionBanner';
 import { colors } from '../../constants/colors';
 import { fontFamily } from '../../constants/fonts';
@@ -84,7 +83,6 @@ export default function HomeScreen() {
           />
         </View>
 
-        <AIPal />
       </ScrollView>
 
       {/* Falling +1 animations overlay */}
