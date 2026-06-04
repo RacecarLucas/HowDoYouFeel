@@ -14,29 +14,44 @@ const firebaseConfig = {
     `https://${process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || ''}-default-rtdb.asia-southeast1.firebasedatabase.app`,
 };
 
+// Debug logging so we can see exactly what's happening in the browser console
+console.log('[Firebase] Config check:');
+console.log('[Firebase] API Key present?', !!firebaseConfig.apiKey);
+console.log('[Firebase] Project ID:', firebaseConfig.projectId);
+console.log('[Firebase] Database URL:', firebaseConfig.databaseURL);
+
 const hasConfig = Object.values(firebaseConfig).every((v) => v && v.length > 0);
+console.log('[Firebase] hasConfig =', hasConfig);
 
 let app: FirebaseApp | null = null;
 let db: Database | null = null;
 let auth: Auth | null = null;
 let firebaseReady = false;
+let firebaseInitError: string | null = null;
 
 try {
   if (hasConfig) {
     if (getApps().length === 0) {
       app = initializeApp(firebaseConfig);
+      console.log('[Firebase] App initialized');
     } else {
       app = getApps()[0];
+      console.log('[Firebase] Using existing app');
     }
     db = getDatabase(app);
     auth = getAuth(app);
     firebaseReady = true;
-    console.log('Firebase initialized successfully');
+    console.log('[Firebase] Ready!');
   } else {
-    console.warn('Firebase config missing — running in demo mode');
+    const missing = Object.entries(firebaseConfig)
+      .filter(([, v]) => !v || !v.length)
+      .map(([k]) => k);
+    firebaseInitError = `Missing config: ${missing.join(', ')}`;
+    console.warn('[Firebase]', firebaseInitError);
   }
-} catch (error) {
-  console.error('Firebase initialization failed:', error);
+} catch (error: any) {
+  firebaseInitError = error?.message || String(error);
+  console.error('[Firebase] Initialization failed:', firebaseInitError);
 }
 
-export { db, auth, firebaseReady };
+export { db, auth, firebaseReady, firebaseInitError };
