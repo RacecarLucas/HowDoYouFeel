@@ -9,7 +9,9 @@ const firebaseConfig = {
   storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
   messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || '',
-  databaseURL: `https://${process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || ''}-default-rtdb.asia-southeast1.firebasedatabase.app`,
+  databaseURL:
+    process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL ||
+    `https://${process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || ''}-default-rtdb.asia-southeast1.firebasedatabase.app`,
 };
 
 const hasConfig = Object.values(firebaseConfig).every((v) => v && v.length > 0);

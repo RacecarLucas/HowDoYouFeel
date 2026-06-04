@@ -1,0 +1,86 @@
+{
+  "globalMoods": {
+    "happy": {
+      "count": 12,
+      "lastClickedAt": 1717497600000,
+      "expiresAt": 1717501200000
+    },
+    "sad": {
+      "count": 3,
+      "lastClickedAt": 1717497600000,
+      "expiresAt": 1717501200000
+    },
+    "angry": {
+      "count": 5,
+      "lastClickedAt": 1717497600000,
+      "expiresAt": 1717501200000
+    },
+    "calm": {
+      "count": 7,
+      "lastClickedAt": 1717497600000,
+      "expiresAt": 1717501200000
+    },
+    "excited": {
+      "count": 8,
+      "lastClickedAt": 1717497600000,
+      "expiresAt": 1717501200000
+    },
+    "anxious": {
+      "count": 2,
+      "lastClickedAt": 1717497600000,
+      "expiresAt": 1717501200000
+    },
+    "tired": {
+      "count": 4,
+      "lastClickedAt": 1717497600000,
+      "expiresAt": 1717501200000
+    },
+    "neutral": {
+      "count": 6,
+      "lastClickedAt": 1717497600000,
+      "expiresAt": 1717501200000
+    }
+  },
+  "activeUsers": {
+    "demo-1": {
+      "userId": "demo-1",
+      "displayName": "Alice",
+      "mood": "happy",
+      "x": 0.3,
+      "y": 0.4,
+      "updatedAt": 1717497600000
+    },
+    "demo-2": {
+      "userId": "demo-2",
+      "displayName": "Bob",
+      "mood": "calm",
+      "x": 0.6,
+      "y": 0.5,
+      "updatedAt": 1717497600000
+    },
+    "demo-3": {
+      "userId": "demo-3",
+      "displayName": "Charlie",
+      "mood": "excited",
+      "x": 0.5,
+      "y": 0.3,
+      "updatedAt": 1717497600000
+    },
+    "demo-4": {
+      "userId": "demo-4",
+      "displayName": "Dana",
+      "mood": "sad",
+      "x": 0.2,
+      "y": 0.7,
+      "updatedAt": 1717497600000
+    },
+    "demo-5": {
+      "userId": "demo-5",
+      "displayName": "Eli",
+      "mood": "angry",
+      "x": 0.8,
+      "y": 0.6,
+      "updatedAt": 1717497600000
+    }
+  }
+}
