@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { ref, get } from 'firebase/database';
 import { db, firebaseReady } from '../firebase/config';
 
 export function useFirebaseStatus() {
@@ -11,9 +11,8 @@ export function useFirebaseStatus() {
       return;
     }
     try {
-      // Try to read a known doc to verify network + permissions
-      const testRef = doc(db, '.info/connected');
-      await getDoc(testRef);
+      const testRef = ref(db, '.info/connected');
+      await get(testRef);
       setStatus('connected');
     } catch {
       setStatus('demo');

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { onSnapshot, collection, doc, updateDoc, increment, serverTimestamp, getDoc, setDoc } from 'firebase/firestore';
+import { ref, onValue, set, update, increment, serverTimestamp, get } from 'firebase/database';
 import { db, firebaseReady } from '../firebase/config';
 import { useMoodStore } from '../store/useMoodStore';
 import { MoodType, GlobalMood } from '../types';
@@ -15,7 +15,6 @@ export function useGlobalMoods() {
     let mounted = true;
 
     if (!firebaseReady || !db) {
-      // Fallback for demo without Firebase
       const demoMoods: Record<string, GlobalMood> = {
         happy: { count: 12, lastClickedAt: new Date(), expiresAt: new Date(Date.now() + MOOD_EXPIRY_MS) },
         sad: { count: 3, lastClickedAt: new Date(), expiresAt: new Date(Date.now() + MOOD_EXPIRY_MS) },
@@ -27,18 +26,17 @@ export function useGlobalMoods() {
       };
     }
 
-    const moodsRef = collection(db, 'globalMoods');
+    const moodsRef = ref(db, 'globalMoods');
     
-    const unsubscribe = onSnapshot(moodsRef, (snapshot) => {
+    const unsubscribe = onValue(moodsRef, (snapshot) => {
       if (!mounted) return;
+      const data = snapshot.val() || {};
       const moods: Record<string, GlobalMood> = {};
       
-      snapshot.docs.forEach((docSnapshot) => {
-        const data = docSnapshot.data();
-        const moodId = docSnapshot.id;
-        const count = data.count || 0;
+      Object.keys(data).forEach((moodId) => {
+        const entry = data[moodId];
+        const count = entry?.count || 0;
         
-        // Detect if count increased (someone clicked)
         if (prevCounts.current[moodId] !== undefined && count > prevCounts.current[moodId]) {
           addPlusOne(moodId as MoodType);
         }
@@ -47,15 +45,14 @@ export function useGlobalMoods() {
         
         moods[moodId] = {
           count,
-          lastClickedAt: data.lastClickedAt?.toDate() || null,
-          expiresAt: data.expiresAt?.toDate() || null,
+          lastClickedAt: entry?.lastClickedAt ? new Date(entry.lastClickedAt) : null,
+          expiresAt: entry?.expiresAt ? new Date(entry.expiresAt) : null,
         };
       });
       
       setGlobalMoods(moods);
     });
 
-    // Client-side expiry check every minute
     intervalRef.current = setInterval(() => {
       if (!mounted) return;
       const now = Date.now();
@@ -83,7 +80,6 @@ export function useGlobalMoods() {
     addPlusOne(mood);
 
     if (!firebaseReady || !db) {
-      // Demo mode - just update local state
       const current = useMoodStore.getState().globalMoods;
       setGlobalMoods({
         ...current,
@@ -96,28 +92,27 @@ export function useGlobalMoods() {
       return;
     }
 
-    const moodRef = doc(db, 'globalMoods', mood);
+    const moodRef = ref(db, `globalMoods/${mood}`);
     
     try {
-      const snap = await getDoc(moodRef);
+      const snap = await get(moodRef);
       if (snap.exists()) {
-        await updateDoc(moodRef, {
+        await update(moodRef, {
           count: increment(1),
           lastClickedAt: serverTimestamp(),
           expiresAt: serverTimestamp(),
         });
       } else {
-        await setDoc(moodRef, {
+        await set(moodRef, {
           count: 1,
           lastClickedAt: serverTimestamp(),
           expiresAt: serverTimestamp(),
         });
       }
       
-      // Update active user for Globe
       if (userId) {
-        const activeUserRef = doc(db, 'activeUsers', userId);
-        await setDoc(activeUserRef, {
+        const activeUserRef = ref(db, `activeUsers/${userId}`);
+        await set(activeUserRef, {
           userId,
           displayName: displayName || 'Anonymous',
           mood,

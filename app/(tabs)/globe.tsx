@@ -14,7 +14,7 @@ import Animated, {
   useFrameCallback,
   withTiming,
 } from 'react-native-reanimated';
-import { onSnapshot, collection } from 'firebase/firestore';
+import { ref, onValue } from 'firebase/database';
 import { db, firebaseReady } from '../../firebase/config';
 import { getMoodById } from '../../constants/moods';
 import { colors } from '../../constants/colors';
@@ -48,7 +48,6 @@ function GlobeDot({
   const velX = useSharedValue(dot.vx);
   const velY = useSharedValue(dot.vy);
 
-  // Always call hooks in the same order (Rules of Hooks)
   useFrameCallback(() => {
     if (Platform.OS === 'web') return;
     posX.value += velX.value;
@@ -72,7 +71,6 @@ function GlobeDot({
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
-    // Web fallback: simple oscillating animation
     const interval = setInterval(() => {
       posX.value = withTiming(
         dot.x + Math.sin(Date.now() / 1000) * 20,
@@ -128,21 +126,22 @@ export default function GlobeScreen() {
       return;
     }
 
-    const activeUsersRef = collection(db, 'activeUsers');
+    const activeUsersRef = ref(db, 'activeUsers');
 
-    const unsubscribe = onSnapshot(activeUsersRef, (snapshot) => {
+    const unsubscribe = onValue(activeUsersRef, (snapshot) => {
       if (!mounted) return;
+      const data = snapshot.val() || {};
       const newDots: DotData[] = [];
-      snapshot.docs.forEach((doc) => {
-        const data = doc.data();
+      Object.keys(data).forEach((key) => {
+        const entry = data[key];
         newDots.push({
-          id: doc.id,
-          x: (data.x || Math.random()) * GLOBE_SIZE,
-          y: (data.y || Math.random()) * GLOBE_SIZE,
+          id: key,
+          x: (entry.x || Math.random()) * GLOBE_SIZE,
+          y: (entry.y || Math.random()) * GLOBE_SIZE,
           vx: (Math.random() - 0.5) * 1.5,
           vy: (Math.random() - 0.5) * 1.5,
-          mood: data.mood || 'neutral',
-          displayName: data.displayName || 'Anonymous',
+          mood: entry.mood || 'neutral',
+          displayName: entry.displayName || 'Anonymous',
         });
       });
       setDots(newDots);

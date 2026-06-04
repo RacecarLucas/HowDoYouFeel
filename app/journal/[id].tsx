@@ -10,12 +10,12 @@ import {
   Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ref, push, serverTimestamp } from 'firebase/database';
 import { colors } from '../../constants/colors';
 import { fontFamily } from '../../constants/fonts';
 import { useMoodStore } from '../../store/useMoodStore';
 import { getMoodById } from '../../constants/moods';
-import { db } from '../../firebase/config';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db, firebaseReady } from '../../firebase/config';
 
 export default function JournalScreen() {
   const { id } = useLocalSearchParams();
@@ -31,8 +31,9 @@ export default function JournalScreen() {
     
     setSaving(true);
     try {
-      if (db) {
-        await addDoc(collection(db, 'userMoods', userId, 'history'), {
+      if (firebaseReady && db) {
+        const historyRef = ref(db, `userMoods/${userId}/history`);
+        await push(historyRef, {
           mood: selectedMood,
           note: note.trim(),
           createdAt: serverTimestamp(),

@@ -1,0 +1,20 @@
+{
+  "rules": {
+    "globalMoods": {
+      ".read": true,
+      ".write": true
+    },
+    "activeUsers": {
+      ".read": true,
+      ".write": true
+    },
+    "userMoods": {
+      "$userId": {
+        "history": {
+          ".read": true,
+          ".write": true
+        }
+      }
+    }
+  }
+}

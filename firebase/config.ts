@@ -1,5 +1,5 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getDatabase, Database } from 'firebase/database';
 import { getAuth, Auth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -9,12 +9,13 @@ const firebaseConfig = {
   storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
   messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || '',
+  databaseURL: `https://${process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || ''}-default-rtdb.asia-southeast1.firebasedatabase.app`,
 };
 
 const hasConfig = Object.values(firebaseConfig).every((v) => v && v.length > 0);
 
 let app: FirebaseApp | null = null;
-let db: Firestore | null = null;
+let db: Database | null = null;
 let auth: Auth | null = null;
 let firebaseReady = false;
 
@@ -25,7 +26,7 @@ try {
     } else {
       app = getApps()[0];
     }
-    db = getFirestore(app);
+    db = getDatabase(app);
     auth = getAuth(app);
     firebaseReady = true;
     console.log('Firebase initialized successfully');

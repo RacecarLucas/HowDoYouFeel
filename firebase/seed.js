@@ -1,4 +1,4 @@
-// Run this with Node.js to seed initial data into Firestore
+// Run this with Node.js to seed initial data into Realtime Database
 // Usage: node firebase/seed.js
 // Make sure you have firebase-admin installed and a service account key
 
@@ -9,22 +9,24 @@ const serviceAccount = require('./serviceAccountKey.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
+  databaseURL: `https://${serviceAccount.project_id}-default-rtdb.asia-southeast1.firebasedatabase.app`,
 });
 
-const db = admin.firestore();
+const db = admin.database();
 
 async function seed() {
   const moods = ['happy', 'sad', 'angry', 'calm', 'excited', 'anxious', 'tired', 'neutral'];
 
   // Seed global moods with 0 counts
+  const globalMoods = {};
   for (const mood of moods) {
-    await db.collection('globalMoods').doc(mood).set({
+    globalMoods[mood] = {
       count: 0,
-      lastClickedAt: admin.firestore.FieldValue.serverTimestamp(),
-      expiresAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+      lastClickedAt: admin.database.ServerValue.TIMESTAMP,
+      expiresAt: admin.database.ServerValue.TIMESTAMP,
+    };
   }
-
+  await db.ref('globalMoods').set(globalMoods);
   console.log('Seeded globalMoods');
 
   // Seed a few demo active users for the globe
@@ -36,14 +38,15 @@ async function seed() {
     { displayName: 'Eli', mood: 'angry', x: 0.8, y: 0.6 },
   ];
 
+  const activeUsers = {};
   for (let i = 0; i < demoUsers.length; i++) {
-    await db.collection('activeUsers').doc(`demo-${i}`).set({
+    activeUsers[`demo-${i}`] = {
       userId: `demo-${i}`,
       ...demoUsers[i],
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+      updatedAt: admin.database.ServerValue.TIMESTAMP,
+    };
   }
-
+  await db.ref('activeUsers').set(activeUsers);
   console.log('Seeded activeUsers');
   console.log('Done!');
   process.exit(0);

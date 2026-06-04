@@ -8,7 +8,7 @@ import {
   Pressable,
   Dimensions,
 } from 'react-native';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { ref, onValue } from 'firebase/database';
 import { db, firebaseReady } from '../../firebase/config';
 import { useMoodStore } from '../../store/useMoodStore';
 import { getMoodById } from '../../constants/moods';
@@ -19,7 +19,6 @@ import { MoodChart } from '../../components/MoodChart';
 
 const { width } = Dimensions.get('window');
 
-// Happiness scale: higher = happier
 const moodScores: Record<MoodType, number> = {
   excited: 5,
   happy: 4,
@@ -56,24 +55,23 @@ export default function CalendarScreen() {
       return;
     }
 
-    const q = query(
-      collection(db, 'userMoods', userId, 'history'),
-      orderBy('createdAt', 'desc')
-    );
+    const historyRef = ref(db, `userMoods/${userId}/history`);
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onValue(historyRef, (snapshot) => {
       if (!mounted) return;
-      const data: UserMoodEntry[] = [];
-      snapshot.docs.forEach((doc) => {
-        const entry = doc.data();
-        data.push({
-          id: doc.id,
+      const data = snapshot.val() || {};
+      const list: UserMoodEntry[] = [];
+      Object.keys(data).forEach((key) => {
+        const entry = data[key];
+        list.push({
+          id: key,
           mood: entry.mood,
           note: entry.note,
-          createdAt: entry.createdAt?.toDate() || new Date(),
+          createdAt: entry.createdAt ? new Date(entry.createdAt) : new Date(),
         });
       });
-      setEntries(data);
+      list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setEntries(list);
     });
 
     return () => {
@@ -92,7 +90,6 @@ export default function CalendarScreen() {
       date.setDate(date.getDate() - i);
       date.setHours(0, 0, 0, 0);
 
-      // Find entry for this day
       const dayEntry = entries.find((e) => {
         const eDate = new Date(e.createdAt);
         return (
@@ -110,23 +107,14 @@ export default function CalendarScreen() {
           ? 'Yesterday'
           : date.toLocaleDateString('en-US', { weekday: 'narrow' });
 
-      data.push({
-        value: score,
-        label,
-        date,
-      });
+      data.push({ value: score, label, date });
     }
 
     return data;
   }, [entries, chartPeriod]);
 
-  const getDaysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
+  const getDaysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const getFirstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
   const getEntryForDay = (day: number) => {
     return entries.find((entry) => {
@@ -237,7 +225,6 @@ export default function CalendarScreen() {
           </View>
         )}
 
-        {/* Mood Trend Chart */}
         {entries.length > 0 && (
           <View style={styles.chartSection}>
             <Text style={styles.statsTitle}>Mood Trend</Text>
