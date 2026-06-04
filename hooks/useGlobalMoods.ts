@@ -12,6 +12,7 @@ export function useGlobalMoods() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    let mounted = true;
     if (!db) {
       // Fallback for demo without Firebase
       const demoMoods: Record<string, GlobalMood> = {
@@ -26,6 +27,7 @@ export function useGlobalMoods() {
     const moodsRef = collection(db, 'globalMoods');
     
     const unsubscribe = onSnapshot(moodsRef, (snapshot) => {
+      if (!mounted) return;
       const moods: Record<string, GlobalMood> = {};
       
       snapshot.docs.forEach((docSnapshot) => {
@@ -52,6 +54,7 @@ export function useGlobalMoods() {
 
     // Client-side expiry check every minute
     intervalRef.current = setInterval(() => {
+      if (!mounted) return;
       const now = Date.now();
       const current = useMoodStore.getState().globalMoods;
       const updated: Record<string, GlobalMood> = { ...current };
@@ -65,6 +68,7 @@ export function useGlobalMoods() {
     }, 60000);
 
     return () => {
+      mounted = false;
       unsubscribe();
       if (intervalRef.current) {
         clearInterval(intervalRef.current);

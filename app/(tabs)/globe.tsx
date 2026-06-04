@@ -6,13 +6,15 @@ import {
   SafeAreaView,
   Pressable,
   Dimensions,
+  Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   useFrameCallback,
+  withTiming,
 } from 'react-native-reanimated';
-import { onSnapshot, collection, Firestore } from 'firebase/firestore';
+import { onSnapshot, collection } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { getMoodById } from '../../constants/moods';
 import { colors } from '../../constants/colors';
@@ -46,7 +48,9 @@ function GlobeDot({
   const velX = useSharedValue(dot.vx);
   const velY = useSharedValue(dot.vy);
 
+  // Always call hooks in the same order (Rules of Hooks)
   useFrameCallback(() => {
+    if (Platform.OS === 'web') return;
     posX.value += velX.value;
     posY.value += velY.value;
 
@@ -65,6 +69,22 @@ function GlobeDot({
       );
     }
   });
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    // Web fallback: simple oscillating animation
+    const interval = setInterval(() => {
+      posX.value = withTiming(
+        dot.x + Math.sin(Date.now() / 1000) * 20,
+        { duration: 1000 }
+      );
+      posY.value = withTiming(
+        dot.y + Math.cos(Date.now() / 1000) * 20,
+        { duration: 1000 }
+      );
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -93,6 +113,7 @@ export default function GlobeScreen() {
   const [selectedDot, setSelectedDot] = useState<DotData | null>(null);
 
   useEffect(() => {
+    let mounted = true;
     if (!db) {
       const demoDots: DotData[] = Array.from({ length: 15 }, (_, i) => ({
         id: `demo-${i}`,
@@ -110,6 +131,7 @@ export default function GlobeScreen() {
     const activeUsersRef = collection(db, 'activeUsers');
 
     const unsubscribe = onSnapshot(activeUsersRef, (snapshot) => {
+      if (!mounted) return;
       const newDots: DotData[] = [];
       snapshot.docs.forEach((doc) => {
         const data = doc.data();
@@ -126,7 +148,10 @@ export default function GlobeScreen() {
       setDots(newDots);
     });
 
-    return () => unsubscribe();
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
   return (

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -27,10 +27,17 @@ export function FallingPlusOne({ id, mood, x }: FallingPlusOneProps) {
   useEffect(() => {
     translateY.value = withTiming(height + 50, { duration: 2500 });
     opacity.value = withTiming(0, { duration: 2500 }, (finished) => {
-      if (finished) {
+      if (finished && Platform.OS !== 'web') {
         runOnJS(removePlusOne)(id);
       }
     });
+    // Web fallback cleanup
+    if (Platform.OS === 'web') {
+      const timer = setTimeout(() => {
+        removePlusOne(id);
+      }, 2600);
+      return () => clearTimeout(timer);
+    }
   }, [translateY, opacity, id, removePlusOne]);
 
   const animatedStyle = useAnimatedStyle(() => ({

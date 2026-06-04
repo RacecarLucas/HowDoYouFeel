@@ -7,7 +7,6 @@ import {
   SafeAreaView,
   Dimensions,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../../constants/colors';
 import { fontFamily } from '../../constants/fonts';
@@ -15,12 +14,16 @@ import { moods } from '../../constants/moods';
 
 const { width } = Dimensions.get('window');
 
-export default function OnboardingScreen() {
-  const router = useRouter();
+interface OnboardingScreenProps {
+  onComplete?: () => void;
+}
 
+export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const handleStart = async () => {
     await AsyncStorage.setItem('hasSeenOnboarding', 'true');
-    router.replace('/(tabs)');
+    if (onComplete) {
+      onComplete();
+    }
   };
 
   return (

@@ -15,7 +15,7 @@ import { getMoodById } from '../../constants/moods';
 import { colors } from '../../constants/colors';
 import { fontFamily } from '../../constants/fonts';
 import { UserMoodEntry, MoodType } from '../../types';
-import { LineChart } from 'react-native-gifted-charts';
+import { MoodChart } from '../../components/MoodChart';
 
 const { width } = Dimensions.get('window');
 
@@ -39,6 +39,7 @@ export default function CalendarScreen() {
   const [chartPeriod, setChartPeriod] = useState<'week' | 'month'>('week');
 
   useEffect(() => {
+    let mounted = true;
     if (!userId) return;
 
     if (!db) {
@@ -61,6 +62,7 @@ export default function CalendarScreen() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!mounted) return;
       const data: UserMoodEntry[] = [];
       snapshot.docs.forEach((doc) => {
         const entry = doc.data();
@@ -74,7 +76,10 @@ export default function CalendarScreen() {
       setEntries(data);
     });
 
-    return () => unsubscribe();
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, [userId]);
 
   const chartData = useMemo(() => {
@@ -254,42 +259,14 @@ export default function CalendarScreen() {
                 </Text>
               </Pressable>
             </View>
-            <LineChart
+            <MoodChart
               data={chartData.map((d) => ({
                 value: d.value,
                 label: d.label,
-                dataPointText: d.value.toString(),
-                textColor: colors.text,
               }))}
               width={width - 64}
               height={180}
-              spacing={chartPeriod === 'week' ? 40 : 12}
-              initialSpacing={12}
-              endSpacing={12}
-              thickness={3}
-              color="#F4A261"
-              dataPointsColor="#F4A261"
-              dataPointsRadius={5}
-              textColor={colors.textSecondary}
-              textFontSize={10}
-              textShiftY={-4}
               maxValue={5}
-              noOfSections={5}
-              yAxisThickness={0}
-              xAxisThickness={1}
-              xAxisColor={colors.border}
-              rulesColor={colors.border}
-              rulesType="solid"
-              showVerticalLines
-              verticalLinesColor={colors.border}
-              verticalLinesThickness={0.5}
-              areaChart
-              startFillColor="rgba(244, 162, 97, 0.3)"
-              endFillColor="rgba(244, 162, 97, 0.05)"
-              startOpacity={0.8}
-              endOpacity={0.1}
-              curved
-              animationDuration={800}
             />
             <View style={styles.legend}>
               <Text style={styles.legendText}>0 = Angry  →  5 = Excited</Text>

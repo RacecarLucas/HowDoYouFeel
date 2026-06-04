@@ -1,4 +1,4 @@
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet } from 'react-native';
@@ -8,36 +8,43 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../constants/colors';
 import { fontFamily } from '../constants/fonts';
 import { useAuth } from '../hooks/useAuth';
+import OnboardingScreen from './onboarding/index';
 
 export default function RootLayout() {
   const { loading } = useAuth();
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     FFSpokenTrial: require('../assets/fonts/FFSpokenTrial-Regular.ttf'),
   });
-  const [checkedOnboarding, setCheckedOnboarding] = useState(false);
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(true);
-  const router = useRouter();
-  const segments = useSegments();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
     AsyncStorage.getItem('hasSeenOnboarding').then((value) => {
-      setHasSeenOnboarding(value === 'true');
-      setCheckedOnboarding(true);
+      if (!mounted) return;
+      setShowOnboarding(value !== 'true');
+      setChecked(true);
     });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  useEffect(() => {
-    if (checkedOnboarding && !hasSeenOnboarding && segments[0] !== 'onboarding') {
-      router.replace('/onboarding');
-    }
-  }, [checkedOnboarding, hasSeenOnboarding, segments, router]);
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+  };
 
-  if (loading || !fontsLoaded || !checkedOnboarding) {
+  if (loading || !checked) {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>How Do You Feel?</Text>
       </View>
     );
+  }
+
+  // If onboarding should show, render it directly instead of navigating
+  if (showOnboarding) {
+    return <OnboardingScreen onComplete={handleOnboardingComplete} />;
   }
 
   return (
@@ -48,7 +55,6 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.background },
         }}
       >
-        <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="journal/[id]"
