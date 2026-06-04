@@ -1,22 +1,24 @@
 import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
-import { signInAnonymously, onAuthStateChanged, User, Auth, getAuth } from 'firebase/auth';
-import { auth } from '../firebase/config';
+import { signInAnonymously, onAuthStateChanged, User, Auth } from 'firebase/auth';
+import { auth, firebaseReady } from '../firebase/config';
 import { useMoodStore } from '../store/useMoodStore';
 
 export function useAuth() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { setUser } = useMoodStore();
 
   useEffect(() => {
     let mounted = true;
 
-    // Demo mode: if auth isn't properly initialized, create a dummy user
-    if (!auth || typeof (auth as Auth).onAuthStateChanged !== 'function') {
+    // Demo mode: if Firebase isn't configured, create a dummy user
+    if (!firebaseReady || !auth || typeof (auth as Auth).onAuthStateChanged !== 'function') {
       const demoId = `demo-${Math.random().toString(36).slice(2, 8)}`;
       setUser(demoId, `User ${demoId.slice(0, 6)}`);
-      setLoading(false);
-      return;
+      if (mounted) setLoading(false);
+      return () => {
+        mounted = false;
+      };
     }
 
     const unsubscribe = onAuthStateChanged(auth as Auth, async (user: User | null) => {
@@ -30,9 +32,10 @@ export function useAuth() {
           if (!mounted) return;
           const displayName = `User ${result.user.uid.slice(0, 6)}`;
           setUser(result.user.uid, displayName);
-        } catch (error) {
+        } catch (err: any) {
           if (!mounted) return;
-          console.error('Anonymous auth failed:', error);
+          console.error('Anonymous auth failed:', err);
+          setError(err?.message || 'Auth failed');
           const demoId = `demo-${Math.random().toString(36).slice(2, 8)}`;
           setUser(demoId, `User ${demoId.slice(0, 6)}`);
         }
@@ -46,5 +49,5 @@ export function useAuth() {
     };
   }, [setUser]);
 
-  return { loading };
+  return { loading, error };
 }

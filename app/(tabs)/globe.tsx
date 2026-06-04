@@ -15,7 +15,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { onSnapshot, collection } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+import { db, firebaseReady } from '../../firebase/config';
 import { getMoodById } from '../../constants/moods';
 import { colors } from '../../constants/colors';
 import { fontFamily } from '../../constants/fonts';
@@ -114,7 +114,7 @@ export default function GlobeScreen() {
 
   useEffect(() => {
     let mounted = true;
-    if (!db) {
+    if (!firebaseReady || !db) {
       const demoDots: DotData[] = Array.from({ length: 15 }, (_, i) => ({
         id: `demo-${i}`,
         x: Math.random() * GLOBE_SIZE,

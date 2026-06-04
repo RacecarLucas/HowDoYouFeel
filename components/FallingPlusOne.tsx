@@ -1,11 +1,5 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, Dimensions, Platform } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  runOnJS,
-} from 'react-native-reanimated';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, Dimensions, Animated } from 'react-native';
 import { MoodType } from '../types';
 import { getMoodById } from '../constants/moods';
 import { useMoodStore } from '../store/useMoodStore';
@@ -19,38 +13,43 @@ interface FallingPlusOneProps {
 }
 
 export function FallingPlusOne({ id, mood, x }: FallingPlusOneProps) {
-  const translateY = useSharedValue(-50);
-  const opacity = useSharedValue(1);
+  const translateY = useRef(new Animated.Value(-50)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
   const { removePlusOne } = useMoodStore();
   const moodConfig = getMoodById(mood);
 
   useEffect(() => {
-    translateY.value = withTiming(height + 50, { duration: 2500 });
-    opacity.value = withTiming(0, { duration: 2500 }, (finished) => {
-      if (finished && Platform.OS !== 'web') {
-        runOnJS(removePlusOne)(id);
-      }
+    Animated.parallel([
+      Animated.timing(translateY, {
+        toValue: height + 50,
+        duration: 2500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 2500,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      removePlusOne(id);
     });
-    // Web fallback cleanup
-    if (Platform.OS === 'web') {
-      const timer = setTimeout(() => {
-        removePlusOne(id);
-      }, 2600);
-      return () => clearTimeout(timer);
-    }
-  }, [translateY, opacity, id, removePlusOne]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    opacity: opacity.value,
-  }));
+    return () => {
+      translateY.stopAnimation();
+      opacity.stopAnimation();
+    };
+  }, [translateY, opacity, id, removePlusOne]);
 
   return (
     <Animated.View
       style={[
         styles.container,
-        animatedStyle,
-        { left: `${x}%`, backgroundColor: moodConfig?.color || '#ccc' },
+        {
+          left: `${x}%`,
+          backgroundColor: moodConfig?.color || '#ccc',
+          transform: [{ translateY }],
+          opacity,
+        },
       ]}
     >
       <Animated.Text style={styles.text}>+1</Animated.Text>

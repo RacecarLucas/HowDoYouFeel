@@ -9,7 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+import { db, firebaseReady } from '../../firebase/config';
 import { useMoodStore } from '../../store/useMoodStore';
 import { getMoodById } from '../../constants/moods';
 import { colors } from '../../constants/colors';
@@ -42,7 +42,7 @@ export default function CalendarScreen() {
     let mounted = true;
     if (!userId) return;
 
-    if (!db) {
+    if (!firebaseReady || !db) {
       const demoEntries: UserMoodEntry[] = [
         { id: '1', mood: 'happy', note: 'Had a great day!', createdAt: new Date() },
         { id: '2', mood: 'calm', note: 'Relaxed evening', createdAt: new Date(Date.now() - 86400000) },

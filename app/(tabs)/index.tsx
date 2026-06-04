@@ -16,6 +16,7 @@ import { MoodSelector } from '../../components/MoodSelector';
 import { GlobalCounter } from '../../components/GlobalCounter';
 import { FallingPlusOne } from '../../components/FallingPlusOne';
 import { AIPal } from '../../components/AIPal';
+import { ConnectionBanner } from '../../components/ConnectionBanner';
 import { colors } from '../../constants/colors';
 import { fontFamily } from '../../constants/fonts';
 import { getMoodById } from '../../constants/moods';
@@ -42,6 +43,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ConnectionBanner />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -85,15 +87,17 @@ export default function HomeScreen() {
         <AIPal />
       </ScrollView>
 
-      {/* Falling +1 animations */}
-      {plusOnes.map((plusOne) => (
-        <FallingPlusOne
-          key={plusOne.id}
-          id={plusOne.id}
-          mood={plusOne.mood}
-          x={plusOne.x}
-        />
-      ))}
+      {/* Falling +1 animations overlay */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+        {plusOnes.map((plusOne) => (
+          <FallingPlusOne
+            key={plusOne.id}
+            id={plusOne.id}
+            mood={plusOne.mood}
+            x={plusOne.x}
+          />
+        ))}
+      </View>
     </SafeAreaView>
   );
 }

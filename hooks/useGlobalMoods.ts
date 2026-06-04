@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { onSnapshot, collection, doc, updateDoc, increment, serverTimestamp, getDoc, setDoc, Firestore } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { onSnapshot, collection, doc, updateDoc, increment, serverTimestamp, getDoc, setDoc } from 'firebase/firestore';
+import { db, firebaseReady } from '../firebase/config';
 import { useMoodStore } from '../store/useMoodStore';
 import { MoodType, GlobalMood } from '../types';
 
@@ -13,7 +13,8 @@ export function useGlobalMoods() {
 
   useEffect(() => {
     let mounted = true;
-    if (!db) {
+
+    if (!firebaseReady || !db) {
       // Fallback for demo without Firebase
       const demoMoods: Record<string, GlobalMood> = {
         happy: { count: 12, lastClickedAt: new Date(), expiresAt: new Date(Date.now() + MOOD_EXPIRY_MS) },
@@ -21,7 +22,9 @@ export function useGlobalMoods() {
         excited: { count: 8, lastClickedAt: new Date(), expiresAt: new Date(Date.now() + MOOD_EXPIRY_MS) },
       };
       setGlobalMoods(demoMoods);
-      return;
+      return () => {
+        mounted = false;
+      };
     }
 
     const moodsRef = collection(db, 'globalMoods');
@@ -77,9 +80,10 @@ export function useGlobalMoods() {
   }, [setGlobalMoods, addPlusOne]);
 
   const clickMood = useCallback(async (mood: MoodType) => {
-    if (!db) {
+    addPlusOne(mood);
+
+    if (!firebaseReady || !db) {
       // Demo mode - just update local state
-      addPlusOne(mood);
       const current = useMoodStore.getState().globalMoods;
       setGlobalMoods({
         ...current,
